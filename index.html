@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Picnic Blanket</title>
+<title>Picnic Basket</title>
 <style>
   :root {
     --cream: #FBF7EE;
@@ -62,8 +62,10 @@
     height: auto;
     border-radius: 18px;
     overflow: hidden;
+    touch-action: none;
   }
-  .food-item { cursor: pointer; transition: transform 0.7s cubic-bezier(.4,1.4,.4,1); }
+  .food-item { cursor: grab; transition: transform 0.5s cubic-bezier(.4,1.4,.4,1); }
+  .food-item.dragging { cursor: grabbing; transition: none; }
   .food-item .card { fill: #FFFFFF; stroke: #3A3226; stroke-width: 2.5; }
   .food-item .card-shadow { fill: rgba(0,0,0,0.16); }
   .food-item .photo-outline { stroke: rgba(0,0,0,0.08); stroke-width: 1.5; }
@@ -80,8 +82,12 @@
   #scene.mode-shuffled .food-item.revealed .label { opacity: 1; }
   #scene.mode-shuffled .food-item .card { stroke: #4F9A5C; stroke-dasharray: 7 6; }
   #scene.mode-shuffled .food-item.revealed .card { stroke: #E8483C; stroke-dasharray: none; }
+  .food-item.in-basket .label { opacity: 0 !important; }
   .food-item:focus { outline: none; }
   .food-item:focus .card { stroke: #4D96FF; stroke-width: 4; }
+  #basketDropRing { transition: opacity 0.2s ease, stroke 0.2s ease; opacity: 0; }
+  #scene.drag-active #basketDropRing { opacity: 1; }
+  #scene.drag-hover #basketDropRing { stroke: #4F9A5C; opacity: 1; }
 
   .controls {
     display: flex;
@@ -145,12 +151,12 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Picnic Blanket &#127820;</h1>
-    <p class="subtitle">10 real food photos scattered on the blanket &mdash; tap the game below to practice!</p>
+    <h1>Picnic Basket &#127820;</h1>
+    <p class="subtitle">Drag each food photo into the basket &mdash; then toggle words or shuffle to practice!</p>
   </header>
 
   <div class="stage">
-    <svg id="scene" viewBox="0 0 1500 1500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Picnic blanket with real food photos">
+    <svg id="scene" viewBox="0 0 1500 1500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Picnic blanket with a basket to drag real food photos into">
   <defs>
     
     <pattern id="blanketPattern" width="110" height="110" patternUnits="userSpaceOnUse">
@@ -169,7 +175,30 @@
   <rect x="104" y="104" width="1292" height="1292" rx="32" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="2 14" stroke-linecap="round" opacity="0.9"></rect>
 
   
-  <g class="food-item" id="food-bread" data-id="bread" transform="translate(285.3,322.9) rotate(9.3)" tabindex="0" role="button" aria-label="BREAD">
+  <g id="basket" transform="translate(750.0,750.0)">
+    <ellipse id="basketDropRing" cx="0" cy="-6" rx="216.0" ry="147.0" fill="none" stroke="#C98A4B" stroke-width="4" stroke-dasharray="3 14" stroke-linecap="round" opacity="0.55"></ellipse>
+    <ellipse cx="0" cy="115.0" rx="184.0" ry="26" fill="#000000" opacity="0.14"></ellipse>
+    <path d="M -190.0 -75.0 Q -180.0 -237.5 0 -237.5 Q 180.0 -237.5 190.0 -75.0"
+          fill="none" stroke="#8B5A2B" stroke-width="14" stroke-linecap="round"></path>
+    <path d="M -190.0 -75.0 Q -180.0 -237.5 0 -237.5 Q 180.0 -237.5 190.0 -75.0"
+          fill="none" stroke="#C98A4B" stroke-width="7" stroke-linecap="round"></path>
+    <path d="M -196.0 -55.0 L -152.0 125.0 Q -144.4 147.0 -38.0 147.0
+             L 38.0 147.0 Q 144.4 147.0 152.0 125.0
+             L 196.0 -55.0 Z" fill="#D9A566" stroke="#8B5A2B" stroke-width="7"></path>
+    <g stroke="#8B5A2B" stroke-width="3.5" opacity="0.65">
+      <path d="M -174.8 -12.5 Q 0 25.0 174.8 -12.5" fill="none"></path>
+      <path d="M -167.2 35.0 Q 0 75.0 167.2 35.0" fill="none"></path>
+      <path d="M -152.0 82.5 Q 0 117.5 152.0 82.5" fill="none"></path>
+      <path d="M -114.0 -50.0 L -83.6 105.0" fill="none"></path>
+      <path d="M -38.0 -57.5 L -26.6 115.0" fill="none"></path>
+      <path d="M 38.0 -57.5 L 26.6 115.0" fill="none"></path>
+      <path d="M 114.0 -50.0 L 83.6 105.0" fill="none"></path>
+    </g>
+    <path d="M -198.0 -50.0 L 198.0 -50.0" stroke="#7A4A22" stroke-width="8" stroke-linecap="round"></path>
+  </g>
+
+  
+  <g class="food-item" id="food-bread" data-id="bread" transform="translate(750.0,270.0) rotate(-8)" tabindex="0" role="button" aria-label="BREAD">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-bread"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -179,7 +208,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">BREAD</text>
     </g>
   </g>
-  <g class="food-item" id="food-banana" data-id="banana" transform="translate(576.1,320.4) rotate(1.9)" tabindex="0" role="button" aria-label="BANANA">
+  <g class="food-item" id="food-banana" data-id="banana" transform="translate(1032.1,361.7) rotate(-1)" tabindex="0" role="button" aria-label="BANANA">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-banana"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -189,7 +218,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">BANANA</text>
     </g>
   </g>
-  <g class="food-item" id="food-chocolate" data-id="chocolate" transform="translate(850.3,320.6) rotate(2.9)" tabindex="0" role="button" aria-label="CHOCOLATE">
+  <g class="food-item" id="food-chocolate" data-id="chocolate" transform="translate(1206.5,601.7) rotate(6)" tabindex="0" role="button" aria-label="CHOCOLATE">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-chocolate"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -199,7 +228,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">CHOCOLATE</text>
     </g>
   </g>
-  <g class="food-item" id="food-chicken" data-id="chicken" transform="translate(1174.4,300.5) rotate(-4.3)" tabindex="0" role="button" aria-label="CHICKEN">
+  <g class="food-item" id="food-chicken" data-id="chicken" transform="translate(1206.5,898.3) rotate(-4)" tabindex="0" role="button" aria-label="CHICKEN">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-chicken"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -209,7 +238,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">CHICKEN</text>
     </g>
   </g>
-  <g class="food-item" id="food-burger" data-id="burger" transform="translate(368.4,764.9) rotate(4.3)" tabindex="0" role="button" aria-label="BURGER">
+  <g class="food-item" id="food-burger" data-id="burger" transform="translate(1032.1,1138.3) rotate(3)" tabindex="0" role="button" aria-label="BURGER">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-burger"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -219,7 +248,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">BURGER</text>
     </g>
   </g>
-  <g class="food-item" id="food-cake" data-id="cake" transform="translate(752.3,773.1) rotate(10.2)" tabindex="0" role="button" aria-label="CAKE">
+  <g class="food-item" id="food-cake" data-id="cake" transform="translate(750.0,1230.0) rotate(-7)" tabindex="0" role="button" aria-label="CAKE">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-cake"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -229,7 +258,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">CAKE</text>
     </g>
   </g>
-  <g class="food-item" id="food-water" data-id="water" transform="translate(1173.3,755.5) rotate(-7.5)" tabindex="0" role="button" aria-label="WATER">
+  <g class="food-item" id="food-water" data-id="water" transform="translate(467.9,1138.3) rotate(0)" tabindex="0" role="button" aria-label="WATER">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-water"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -239,7 +268,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">WATER</text>
     </g>
   </g>
-  <g class="food-item" id="food-lemonade" data-id="lemonade" transform="translate(309.2,1151.4) rotate(-9.7)" tabindex="0" role="button" aria-label="LEMONADE">
+  <g class="food-item" id="food-lemonade" data-id="lemonade" transform="translate(293.5,898.3) rotate(7)" tabindex="0" role="button" aria-label="LEMONADE">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-lemonade"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -249,7 +278,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">LEMONADE</text>
     </g>
   </g>
-  <g class="food-item" id="food-salad" data-id="salad" transform="translate(705.7,1137.6) rotate(-10.3)" tabindex="0" role="button" aria-label="SALAD">
+  <g class="food-item" id="food-salad" data-id="salad" transform="translate(293.5,601.7) rotate(-3)" tabindex="0" role="button" aria-label="SALAD">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-salad"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -259,7 +288,7 @@
       <text class="word-text" text-anchor="middle" dy="0.32em">SALAD</text>
     </g>
   </g>
-  <g class="food-item" id="food-mango" data-id="mango" transform="translate(1107.6,1147.1) rotate(7.5)" tabindex="0" role="button" aria-label="MANGO">
+  <g class="food-item" id="food-mango" data-id="mango" transform="translate(467.9,361.7) rotate(4)" tabindex="0" role="button" aria-label="MANGO">
     <rect class="card-shadow" x="-113.0" y="-132.0" width="234" height="280" rx="14"></rect>
     <rect class="card" x="-117.0" y="-140.0" width="234" height="280" rx="14"></rect>
     <defs><clipPath id="clip-mango"><rect x="-105.0" y="-128.0" width="210" height="210" rx="6"></rect></clipPath></defs>
@@ -285,7 +314,7 @@
 
   <p class="status" id="status"></p>
 
-  <footer>Tip: in Shuffle mode, tap any photo to reveal (or hide again) its word.</footer>
+  <footer>Tip: drag a photo into the basket to pack it. In Shuffle mode, tap (don&rsquo;t drag) any photo to reveal or hide its word.</footer>
 </div>
 
 <script>
@@ -293,25 +322,83 @@
   var scene = document.getElementById('scene');
   var items = Array.prototype.slice.call(document.querySelectorAll('.food-item'));
 
-  var slotPositions = items.map(function(el) {
+  var CX = 750.0, CY = 750.0;
+  var BASKET_HIT = { x0: CX - 190.0, x1: CX + 190.0, y0: CY - 125.0 - 40, y1: CY + 125.0 + 30 };
+  var BASKET_COLS = 5, BASKET_ROWS = 2;
+  var BASKET_CELL_W = (380 - 40) / BASKET_COLS;
+  var BASKET_CELL_H = 150 / BASKET_ROWS;
+  var BASKET_SCALE = 0.34;
+
+  function basketSlotPos(i) {
+    var col = i % BASKET_COLS, row = Math.floor(i / BASKET_COLS);
+    var x = CX - (380 - 40) / 2 + BASKET_CELL_W * (col + 0.5);
+    var y = CY - 55 + BASKET_CELL_H * (row + 0.5);
+    return { x: x, y: y };
+  }
+
+  var ringSlots = items.map(function(el) {
     var t = el.getAttribute('transform');
     var m = t.match(/translate\(([-\d.]+),\s*([-\d.]+)\)\s*rotate\(([-\d.]+)\)/);
     return { x: parseFloat(m[1]), y: parseFloat(m[2]), rot: parseFloat(m[3]) };
   });
   var defaultOrderIds = items.map(function(el) { return el.getAttribute('data-id'); });
+  var currentOrder = defaultOrderIds.slice();
   var idToEl = {};
   items.forEach(function(el) { idToEl[el.getAttribute('data-id')] = el; });
+
+  var inBasket = {};
+  defaultOrderIds.forEach(function(id) { inBasket[id] = false; });
+  var collected = [];
 
   var mode = 'fixed';
   var wordsVisible = true;
 
-  function placeAtSlots(orderIds) {
-    orderIds.forEach(function(id, i) {
-      var el = idToEl[id];
-      var p = slotPositions[i];
-      el.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(' + p.rot + ')');
-      el.setAttribute('data-slot', i);
-    });
+  function renderItem(id, animate) {
+    var el = idToEl[id];
+    if (!animate) { el.style.transition = 'none'; }
+    if (inBasket[id]) {
+      var bi = collected.indexOf(id);
+      var p = basketSlotPos(bi);
+      el.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(0) scale(' + BASKET_SCALE + ')');
+      el.classList.add('in-basket');
+    } else {
+      var slotIndex = currentOrder.indexOf(id);
+      var p2 = ringSlots[slotIndex];
+      el.setAttribute('transform', 'translate(' + p2.x + ',' + p2.y + ') rotate(' + p2.rot + ')');
+      el.classList.remove('in-basket');
+    }
+    if (!animate) { el.offsetHeight; el.style.transition = ''; }
+  }
+
+  function renderAll(animate) {
+    defaultOrderIds.forEach(function(id) { renderItem(id, animate); });
+  }
+
+  function repackBasket() {
+    collected.forEach(function(id) { renderItem(id, true); });
+  }
+
+  function placeInBasket(id) {
+    if (!inBasket[id]) {
+      inBasket[id] = true;
+      collected.push(id);
+    }
+    renderItem(id, true);
+  }
+
+  function returnHome(id) {
+    if (inBasket[id]) {
+      inBasket[id] = false;
+      var idx = collected.indexOf(id);
+      if (idx > -1) collected.splice(idx, 1);
+      repackBasket();
+    }
+    renderItem(id, true);
+  }
+
+  function resetBasket() {
+    collected = [];
+    defaultOrderIds.forEach(function(id) { inBasket[id] = false; });
   }
 
   function shuffleArray(arr) {
@@ -325,12 +412,13 @@
 
   function updateStatus() {
     var statusEl = document.getElementById('status');
+    var parts = [];
     if (mode === 'shuffled') {
       var revealed = items.filter(function(el) { return el.classList.contains('revealed'); }).length;
-      statusEl.innerHTML = 'Shuffled! Tap a photo to reveal its word &mdash; <b>' + revealed + ' / ' + items.length + '</b> found';
-    } else {
-      statusEl.textContent = '';
+      parts.push('Shuffled! Tap a photo to reveal its word &mdash; <b>' + revealed + ' / ' + items.length + '</b> found');
     }
+    parts.push('<b>' + collected.length + ' / ' + items.length + '</b> in the basket');
+    statusEl.innerHTML = parts.join(' &nbsp;|&nbsp; ');
   }
 
   function setWordsButtonLabel() {
@@ -353,7 +441,9 @@
       mode = 'fixed';
       wordsVisible = true;
       items.forEach(function(el) { el.classList.remove('revealed'); });
-      placeAtSlots(defaultOrderIds);
+      currentOrder = defaultOrderIds.slice();
+      resetBasket();
+      renderAll(true);
       scene.classList.remove('mode-shuffled');
       scene.classList.remove('words-hidden');
     } else {
@@ -370,27 +460,97 @@
     scene.classList.remove('words-hidden');
     items.forEach(function(el) { el.classList.remove('revealed'); });
     var newOrder = shuffleArray(defaultOrderIds);
-    var current = items.slice().sort(function(a,b) { return a.getAttribute('data-slot') - b.getAttribute('data-slot'); }).map(function(el) { return el.getAttribute('data-id'); });
-    var same = newOrder.every(function(id, i) { return id === current[i]; });
+    var same = newOrder.every(function(id, i) { return id === currentOrder[i]; });
     if (same) { newOrder.reverse(); }
-    placeAtSlots(newOrder);
+    currentOrder = newOrder;
+    resetBasket();
+    renderAll(true);
     setWordsButtonLabel();
     updateStatus();
   });
 
+  // ---- drag and drop ----
+  function svgPoint(evt) {
+    var pt = scene.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(scene.getScreenCTM().inverse());
+  }
+
+  function inBasketZone(x, y) {
+    return x > BASKET_HIT.x0 && x < BASKET_HIT.x1 && y > BASKET_HIT.y0 && y < BASKET_HIT.y1;
+  }
+
   items.forEach(function(el) {
-    function toggle() {
-      if (mode !== 'shuffled') return;
-      el.classList.toggle('revealed');
+    var id = el.getAttribute('data-id');
+    var dragging = false, moved = false;
+    var startClientX = 0, startClientY = 0, startSvg = null, originX = 0, originY = 0, originRot = 0, originScale = 1;
+
+    el.addEventListener('pointerdown', function(e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      dragging = true; moved = false;
+      startClientX = e.clientX; startClientY = e.clientY;
+      startSvg = svgPoint(e);
+      var t = el.getAttribute('transform');
+      var m = t.match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
+      originX = parseFloat(m[1]); originY = parseFloat(m[2]);
+      el.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    el.addEventListener('pointermove', function(e) {
+      if (!dragging) return;
+      var cur = svgPoint(e);
+      var dx = cur.x - startSvg.x, dy = cur.y - startSvg.y;
+      var pixelDist = Math.hypot(e.clientX - startClientX, e.clientY - startClientY);
+      if (!moved && pixelDist > 6) {
+        moved = true;
+        el.classList.add('dragging');
+        scene.classList.add('drag-active');
+      }
+      if (moved) {
+        var nx = originX + dx, ny = originY + dy;
+        el.setAttribute('transform', 'translate(' + nx + ',' + ny + ') rotate(0)');
+        scene.classList.toggle('drag-hover', inBasketZone(nx, ny));
+      }
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      scene.classList.remove('drag-active');
+      scene.classList.remove('drag-hover');
+      if (!moved) {
+        if (mode === 'shuffled') {
+          el.classList.toggle('revealed');
+          updateStatus();
+        }
+        return;
+      }
+      var cur = svgPoint(e);
+      var dx = cur.x - startSvg.x, dy = cur.y - startSvg.y;
+      var nx = originX + dx, ny = originY + dy;
+      if (inBasketZone(nx, ny)) {
+        placeInBasket(id);
+      } else {
+        returnHome(id);
+      }
       updateStatus();
     }
-    el.addEventListener('click', toggle);
+
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
     el.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (mode === 'shuffled') { el.classList.toggle('revealed'); updateStatus(); }
+      }
     });
   });
 
   setWordsButtonLabel();
+  updateStatus();
 })();
 </script>
 </body>
